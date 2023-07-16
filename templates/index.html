@@ -9,12 +9,14 @@
     />
 
     <!--linea de codigo para los estilos de bootstrap via web-->
+
     <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
       crossorigin="anonymous"
     />
+
     <link
       rel="stylesheet"
       href="{{url_for('static', filename='lib/bootstrap/bootstrap.min.js')}}"
@@ -41,58 +43,106 @@
 
   <body>
     <!--Encabezado-->
-    <header>
+    <header class="p-2">
       <div class="container">
-        <div class="row align-items-center">
-          <div class="col logo">
+        <div
+          class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start"
+        >
+          <a
+            href="/"
+            class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none"
+          >
             <img
               class="logo"
               src="{{url_for('static', filename='public/img/UV.png')}}"
             />
+          </a>
+
+          <ul
+            class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0"
+          >
+            <li>
+              <a class="nav-link px-3 text-white texto">
+                Ofertas Inmobiliarias - Cali
+              </a>
+            </li>
+          </ul>
+
+          <div class="text-end">
+            <a class="btn btn-warning" href="{{url_for('logout')}}"
+              >Cerrar sesión</a
+            >
           </div>
         </div>
       </div>
     </header>
-
     <!--Contenido Principal-->
     <main>
-      <div class="container align-items-center">
-        <div class="row">
-          <div class="col">
-            <p class="pregunta">VISOR OFERTAS INMOBILIARIAS EN CALI</p>
+      <div class="container py-4">
+        <div class="row align-items-md-stretch">
+          <div class="col-md-8">
+            <div class="h-100 p-3 bg-body-tertiary rounded-3">
+              <h3>Administrar ofertas</h3>
+              <div id="mapid" style="width: 100%; height: 600px"></div>
+              <script
+                type="text/javascript"
+                src="{{url_for('static', filename='src/js/mapa.js')}}"
+              ></script>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="h-100 p-4 bg-body-tertiary rounded-3">
+              <h3>Selecciones</h3>
+              <p>
+                Or, keep it light and add a border for some added definition to
+                the boundaries of your content. Be sure to look under the hood
+                at the source HTML here as we've adjusted the alignment and
+                sizing of both column's content for equal-height.
+              </p>
+              <button class="btn btn-outline-secondary" type="button">
+                Example button
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </main>
-
-    <div class="row">
-      <div class="col">
-        <div id="mapid" style="width: 100%; height: 600px"></div>
-        <!-- Definición del mapa -->
-        <script
-          type="text/javascript"
-          src="{{url_for('static', filename='src/js/mapa.js')}}"
-        ></script>
-      </div>
-    </div>
-
     <!--Pie de pagina-->
-    <footer class="content">
-      <div class="row align-items-center">
-        <div class="col nombres">
+    <footer
+      class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top"
+    >
+      <div class="row col-md-4 d-flex align-items-center text-body-secondary">
+        <div style="margin-left: 33px">
           Jorge William Ocampo
           <br />
           Andrés Estacio Cumbe
+          <br />
+          2023
         </div>
       </div>
+
+      <ul class="nav col-md-4 justify-content-end list-unstyled d-flex">
+        <a class="btn btn-warning" href="{{url_for('logout')}}"
+          >Cerrar sesión</a
+        >
+        <a
+          class="mb-3 me-2 mb-md-0 text-body-secondary text-decoration-none lh-1"
+        >
+          <svg class="bi" width="30" height="24">
+            <use xlink:href="#bootstrap" />
+          </svg>
+        </a>
+      </ul>
     </footer>
-
-    <a href="{{url_for('logout')}}">Cerrar sesión</a>
-
     <!--Librerias-->
     <!--linea de codigo para agregar las librerias de jquery y de bootstrap, y de popper que es la ultima linea-->
     <script src="{{url_for('static', filename='lib/jquery/jquery-3.5.0.min.js')}}"></script>
     <!-- <script src="js/popper.min.js"></script> esta es otra libreria para tooltips que usa no la voy a usar ahora, se debe conservar este orden-->
-    <script src="{{url_for('static', filename='lib/bootstrap/bootstrap.min.js')}}"></script>
+    <!-- <script src="{{url_for('static', filename='lib/bootstrap/bootstrap.min.js')}}"></script> -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+      crossorigin="anonymous"
+    ></script>
   </body>
 </html>

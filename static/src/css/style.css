@@ -1,52 +1,68 @@
-
 #mapid {
-        border: gray 5px ridge;
-      }
-	  
-/* fondo main*/
-body{
-	background: gray;
+  border: gray 0px ridge;
 }
 
+/* fondo main*/
+/* body{
+	background: gray;
+} */
+
 /* fondo nombre itulo visor*/
-header{
-	background:black;
-	padding: 8px 0;
+header {
+  background: black;
+  /* padding: 8px 0; */
 }
 
 /* formato logo uv*/
-header .logo{
-	width: 40px;
+header .logo {
+  width: 40px;
 }
 
-.pregunta{
-	margin-top:2%;
-	text-align: center;
-	font-size: 30px;
-	font-family: Cambria;
-	background: black;
-	border-radius: 10px;
-	color: white;
-	vertical-align: middle
+button.btn-warning a {
+  text-decoration: none;
+  color: #000;
 }
 
+button.btn-outline-light a {
+  text-decoration: none;
+  color: #fff;
+}
+
+button.btn-dark a {
+  text-decoration: none;
+  color: #fff;
+}
+
+.texto {
+  font-size: larger !important;
+}
+
+.pregunta {
+  margin-top: 2%;
+  text-align: center;
+  font-size: 30px;
+  font-family: Cambria;
+  background: black;
+  border-radius: 10px;
+  color: white;
+  vertical-align: middle;
+}
 
 /* estilos main */
-main{
-	margin-bottom: 30px;
+main {
+  margin-bottom: 30px;
 }
 
 /* estilo de pagina */
-footer{
-	background:#0A1169;
-	color: white;
-	font-size: 18px;
-	height: 70px;
-}
+/* footer {
+  background: #0a1169;
+  color: white;
+  font-size: 18px;
+  height: 70px;
+} */
 
-.nombres{
-	padding: 20px 0px 0px 20px;
-	text-align: center;
-	font-family: Cambria;
+.nombres {
+  padding: 20px 0px 0px 20px;
+  text-align: center;
+  font-family: Cambria;
 }
-

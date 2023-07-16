@@ -24,9 +24,9 @@ var basemaps = {
 
 // declarar variables de cada capa
 
-const servidorGeoserver = "http://localhost:9080/geoserver/";
+const servidorGeoserver = "http://localhost:8080/geoserver/";
 
-var wms_educacion = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
+/* var wms_educacion = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
   layers: "ofertas_cali:educacion",
   format: "image/png",
   transparent: true,
@@ -54,7 +54,7 @@ var wms_culto = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
   layers: "ofertas_cali:culto",
   format: "image/png",
   transparent: true,
-});
+}); */
 
 var wms_comunas = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
   layers: "ofertas_cali:comunas",
@@ -62,7 +62,7 @@ var wms_comunas = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
   transparent: true,
 });
 
-var wms_deporte = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
+/* var wms_deporte = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
   layers: "ofertas_cali:deporte",
   format: "image/png",
   transparent: true,
@@ -75,7 +75,7 @@ var wms_estaciones_mio = L.tileLayer.wms(
     format: "image/png",
     transparent: true,
   }
-);
+); */
 
 var wms_ofertas_cali = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
   layers: "ofertas_cali:ofertas_cali",
@@ -83,7 +83,7 @@ var wms_ofertas_cali = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
   transparent: true,
 });
 
-var wms_perimetro_urbano = L.tileLayer.wms(
+/* var wms_perimetro_urbano = L.tileLayer.wms(
   `${servidorGeoserver}ofertas_cali/wms`,
   {
     layers: "ofertas_cali:perimetro_urbano",
@@ -108,18 +108,18 @@ var wms_vias = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
   layers: "ofertas_cali:vias",
   format: "image/png",
   transparent: true,
-});
+}); */
 
-//var contenido = L.control.layers() //crea un mapa de contenido o control de layers
+//var contenido = L.control.layers(); //crea un mapa de contenido o control de layers
 //contenido.addOverlay(wms_educacion,"Capa educacion");
 //contenido.addOverlay(wms_cultura,"Capa cultura");
 //contenido.addOverlay(wms_recreacion,"Capa recreacion");
 //contenido.addOverlay(wms_salud,"Capa salud");
 //contenido.addOverlay(wms_culto,"Capa culto");
-//contenido.addOverlay(wms_comuna,"Capa comuna");
+//contenido.addOverlay(wms_comunas, "Capa comuna");
 //contenido.addOverlay(wms_deporte,"Capa deporte");
 //contenido.addOverlay(wms_estaciones_mio,"Capa estaciones mio");
-//contenido.addOverlay(wms_ofertas_cali,"Capa ofertas inmobiliarias");
+//contenido.addOverlay(wms_ofertas_cali, "Capa ofertas inmobiliarias");
 //contenido.addOverlay(wms_perimetro_urbano,"Capa perimetro urbano");
 //contenido.addOverlay(wms_seguridad,"Capa seguridad");
 //contenido.addOverlay(wms_terrenos,"Capa terrenos");
@@ -130,21 +130,21 @@ var wms_vias = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
 
 var groupedOverlays = {
   "Capas Base": {
-    "Capa terrenos": wms_terrenos,
-    "Capa vias": wms_vias,
+    /* "Capa terrenos": wms_terrenos, */
+    /*  "Capa vias": wms_vias, */
     "Capa comuna": wms_comunas,
-    "Capa perimetro urbano": wms_perimetro_urbano,
+    /* "Capa perimetro urbano": wms_perimetro_urbano, */
   },
 
   "Capas Tematicas": {
-    "Capa educacion": wms_educacion,
+    /* "Capa educacion": wms_educacion,
     "Capa cultura": wms_cultura,
     "Capa recreacion": wms_recreacion,
     "Capa salud": wms_salud,
     "Capa culto": wms_culto,
     "Capa deporte": wms_deporte,
     "Capa seguridad": wms_seguridad,
-    "Capa estaciones mio": wms_estaciones_mio,
+    "Capa estaciones mio": wms_estaciones_mio, */
     "Capa ofertas inmobiliarias": wms_ofertas_cali,
   },
 };
@@ -163,7 +163,9 @@ L.control
 //llamar capas creadas
 //contenido.addTo(mymap);
 
-wms_perimetro_urbano.addTo(mymap);
+wms_comunas.addTo(mymap);
+wms_ofertas_cali.addTo(mymap);
+/* wms_perimetro_urbano.addTo(mymap);
 wms_terrenos.addTo(mymap);
 wms_educacion.addTo(mymap);
 wms_cultura.addTo(mymap);
@@ -173,7 +175,5 @@ wms_culto.addTo(mymap);
 wms_deporte.addTo(mymap);
 wms_seguridad.addTo(mymap);
 wms_estaciones_mio.addTo(mymap);
-wms_ofertas_cali.addTo(mymap);
-wms_vias.addTo(mymap);
-wms_comunas.addTo(mymap);
+wms_vias.addTo(mymap); */
 street.addTo(mymap);

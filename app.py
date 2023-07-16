@@ -4,7 +4,7 @@ from flask import Flask, render_template, url_for, redirect
 from dotenv import load_dotenv
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask_bcrypt import Bcrypt
 
@@ -48,10 +48,10 @@ class RegisterForm(FlaskForm):
     password = PasswordField(validators=[InputRequired(), Length(
         min=6, max=20)], render_kw={"placeholder": "Contraseña"})
 
-    tipo_usuario = StringField(validators=[InputRequired(), Length(
-        min=0, max=20)], render_kw={"placeholder": "Tipo de usuario"})
+    tipo_usuario = SelectField(validators=[InputRequired(), Length(
+        min=0, max=20)], choices=[('Administrador'), ('Usuario'),], option_widget=None, render_kw={"placeholder": "Tipo de usuario"})
 
-    submit = SubmitField('Register')
+    submit = SubmitField('Registrarse')
 
     def validar_usuario(self, username):
         with connection:
@@ -72,7 +72,7 @@ class LoginForm(FlaskForm):
     password = PasswordField(validators=[
                              InputRequired(), Length(min=6, max=20)], render_kw={"placeholder": "Contraseña"})
 
-    submit = SubmitField('Login')
+    submit = SubmitField('Ingresar')
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -115,7 +115,7 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/registro', methods=['GET', 'POST'])
 def signup():
     form = RegisterForm()
     if form.validate_on_submit():
