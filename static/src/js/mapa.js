@@ -19,6 +19,15 @@ var s_light_style = {
   fillOpacity: 0.8,
 };
 
+var s_light_style_consulta = {
+  radius: 4,
+  fillColor: "#38761d",
+  color: "#000",
+  weight: 1,
+  opacity: 1,
+  fillOpacity: 0.8,
+};
+
 var street = L.tileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
   attribution:
@@ -239,16 +248,31 @@ const form = document.getElementById("comunas");
 form.addEventListener("submit", (event) => {
   event.preventDefault();
 
+  document
+    .querySelector("button#reiniciar-consulta")
+    .removeAttribute("disabled");
+
   const datoComuna = event.target["select-comunas"].value;
   const datoEstado = event.target["select-estado"].value;
   const datoTipo = event.target["select-tipo"].value;
+
+  const comunasCompletas = document
+    .querySelector("#mapa-despliegue")
+    .getAttribute("comunas_completas");
+
+  const comunasFiltra = JSON.parse(comunasCompletas.replace(/'/g, '"')).filter(
+    (element) => element.comuna == datoComuna
+  );
+
+  console.log(comunasFiltra[0].lat, comunasFiltra[0].lng);
 
   traerDatosJSON(
     `http://127.0.0.1:5000/api/estadistica/${datoComuna}/${datoEstado}/${datoTipo}`
   ).then((data) => {
     document.getElementById(
       "resultado-modal"
-    ).innerHTML = `<table class="table">
+    ).innerHTML = `<p>Estadísticas de las ofertas para la comuna <strong>${datoComuna}</strong>, con estado <strong>${datoEstado}</strong> y de tipo <strong>${datoTipo}</strong></p>
+    <table class="table">
      <thead>
        <tr>
          <th scope="col">Inmueble</th>
@@ -269,4 +293,73 @@ form.addEventListener("submit", (event) => {
      </tbody>
    </table>`;
   });
+
+  const urlConsulta = `http://localhost:8080/geoserver/ofertas_cali/ows?
+service=WFS&
+version=1.0.0&
+request=GetFeature&
+typeName=ofertas_cali:ofertas_estadistica&
+viewparams=comuna:${datoComuna};estado:${datoEstado};tipo_ofert:${datoTipo}&
+outputFormat=application%2Fjson`;
+
+  traerDatosJSON(urlConsulta).then((data) => {
+    ofertasSelect = new L.GeoJSON(data, {
+      onEachFeature: (feature, layer) => {
+        layer.setStyle({
+          color: "black",
+          weight: 1.9,
+        });
+        layer.bindPopup(
+          '<h4 class = "text-primary">Inmuebles</h4>' +
+            '<div class="container"><table class="table table-striped">' +
+            "<thead><tr><th>Properties</th><th>Value</th></tr></thead>" +
+            "<tbody><tr><td> Barrio </td><td>" +
+            feature.properties.barrio +
+            "</td></tr>" +
+            "<tr><td> Tipo de oferta </td><td>" +
+            feature.properties.tipo_ofert +
+            "</td></tr>" +
+            "<tr><td> Estrato </td><td>" +
+            feature.properties.estrato +
+            "</td></tr>" +
+            "<tr><td> Acabados </td><td>" +
+            feature.properties.acabados +
+            "</td></tr>" +
+            "<tr><td> Estado </td><td>" +
+            feature.properties.estado +
+            "</td></tr>" +
+            "<tr><td> Valor pedido </td><td>$" +
+            thousands_separators(feature.properties.valor_pedi) +
+            "</td></tr>"
+        );
+      },
+      pointToLayer: (feature, latlng) => {
+        capa_ofertas = L.circleMarker(latlng, s_light_style_consulta);
+        groupedOverlays["Ofertas select"] = capa_ofertas;
+        return capa_ofertas;
+      },
+    });
+    layerControl.addOverlay(ofertasSelect, "Ofertas select");
+    ofertas.remove(mymap);
+    ofertasSelect.addTo(mymap);
+  });
+
+  mymap.flyTo([comunasFiltra[0].lat, comunasFiltra[0].lng], 14);
 });
+
+const reiniciarConsulta = () => {
+  /* Se reinicia el formulario de consulta */
+  document.querySelector("form #select-comunas").value = "Seleccione la comuna";
+  document.querySelector("form #select-estado").value = "Estado del inmueble";
+  document.querySelector("form #select-tipo").value = "Tipo de oferta";
+
+  /* Se habilita el botón de reiniciar consulta */
+  document
+    .querySelector("button#reiniciar-consulta")
+    .setAttribute("disabled", true);
+  /* Se remueven las capas de consulta */
+  mymap.removeLayer(ofertasSelect);
+  layerControl.removeLayer(ofertasSelect);
+  ofertas.addTo(mymap);
+  mymap.flyTo([3.42, -76.5221987], 13);
+};

@@ -138,14 +138,24 @@
                   </select>
                   <br />
                   <button
+                    id="resultados"
                     type="submit"
                     class="btn btn-outline-secondary"
                     data-bs-toggle="modal"
                     data-bs-target="#exampleModal"
                   >
-                    Consultar
+                    Consultar valores
                   </button>
                 </form>
+
+                <button
+                  id="reiniciar-consulta"
+                  onclick="reiniciarConsulta()"
+                  class="btn btn-outline-secondary"
+                  disabled="true"
+                >
+                  Reiniciar consulta
+                </button>
               </div>
             </div>
           </div>
@@ -161,7 +171,9 @@
       aria-labelledby="exampleModalLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+      >
         <div class="modal-content">
           <div class="modal-header">
             <h1 class="modal-title fs-5" id="exampleModalLabel">Resultado</h1>
@@ -224,8 +236,10 @@
       crossorigin="anonymous"
     ></script>
     <script
+      id="mapa-despliegue"
       type="text/javascript"
       src="{{url_for('static', filename='src/js/mapa.js')}}"
+      comunas_completas="{{comunas_completas}}"
     ></script>
   </body>
 </html>

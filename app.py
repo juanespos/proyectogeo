@@ -107,16 +107,21 @@ def login():
 def ofertas():
     with connection:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT DISTINCT comuna::int FROM ofertas_cali ORDER BY comuna ASC;")
+            cursor.execute("SELECT comuna::int, st_x(st_centroid(the_geom)) lat,st_y(st_centroid(the_geom)) lng from comunas ORDER BY comuna ASC;")
             datos = cursor.fetchall()
             comunas = [dato[0] for dato in datos]
+            comunas_completas = [{
+                "comuna": dato[0],
+                "lat": dato[2],
+                "lng": dato[1],
+            } for dato in datos]
             cursor.execute("SELECT DISTINCT estado::text FROM ofertas_cali;")
             datos2 = cursor.fetchall()
             estado = [dato[0] for dato in datos2]
             cursor.execute("SELECT DISTINCT tipo_ofert::text FROM ofertas_cali;")
             datos3 = cursor.fetchall()
             tipo = [dato[0] for dato in datos3]
-    return render_template('index.html',lenCom=len(comunas),comunas=comunas,lenEst=len(estado),estado=estado,lenTipo=len(tipo),tipo=tipo)
+    return render_template('index.html',lenCom=len(comunas),comunas=comunas, comunas_completas=comunas_completas,lenEst=len(estado),estado=estado,lenTipo=len(tipo),tipo=tipo)
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -149,10 +154,18 @@ def signup():
 
 
 # Consultas
-ESTADISTICA = """SELECT inmueble, AVG(valor_pedi)::float, MAX(valor_pedi)::float, MIN(valor_pedi)::float
+ESTADISTICA = """SELECT inmueble, ROUND(AVG(valor_pedi),2), ROUND(MAX(valor_pedi),2), ROUND(MIN(valor_pedi),2)
 FROM ofertas_cali
 WHERE comuna ilike %s and estado ilike %s and tipo_ofert ilike %s
 GROUP BY inmueble;"""
+
+ESTADISTICA_ESPACIAL = "SELECT * FROM ofertas_cali WHERE comuna ilike %s and estado ilike %s and tipo_ofert ilike %s;"
+
+OFERTAS_RANGO = """SELECT gid, barrio, comuna 
+FROM ofertas_cali
+WHERE valor_pedi BETWEEN 180000000 AND 385000000 and comuna ilike '17' and tipo_inmue = '3' and tipo_ofert ilike 'Venta'"""
+
+
 
 
 # Terminan consultas
@@ -171,14 +184,6 @@ def get_estadistica(comuna,estado,tipo_oferta):
         "maximo": dato[2],
     } for dato in datos]
 
-@app.get("/api/comunas")
-def get_comunas():
-    with connection:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT DISTINCT comuna::int FROM ofertas_cali ORDER BY comuna ASC;")
-            datos = cursor.fetchall()
-    """ return {"comunas": [dato[0] for dato in datos]} """
-    return [{"comuna": dato[0]} for dato in datos]
 
 if __name__ == '__main__':
     app.run(debug=True)
