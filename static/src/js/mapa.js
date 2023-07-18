@@ -1,15 +1,23 @@
 // declarar variables de mapa base street
 
-var mymap = L.map("mapid").setView([3.42, -76.5221987], 12);
+var mymap = L.map("mapid").setView([3.42, -76.5221987], 13);
 
-var gray = L.tileLayer(
-  "http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png",
-  {
-    maxZoom: 18,
-    attribution:
-      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  }
-);
+const ruta =
+  "http://localhost:8080/geoserver/ofertas_cali/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ofertas_cali%3Aofertas_cali&outputFormat=application%2Fjson";
+
+const traerDatosJSON = async (url) => {
+  const response = await (await fetch(url)).json();
+  return response;
+};
+
+var s_light_style = {
+  radius: 4,
+  fillColor: "#ff7800",
+  color: "#000",
+  weight: 1,
+  opacity: 1,
+  fillOpacity: 0.8,
+};
 
 var street = L.tileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
@@ -18,7 +26,7 @@ var street = L.tileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 });
 
 var basemaps = {
-  Grayscale: gray,
+  //Grayscale: gray,
   Streets: street,
 };
 
@@ -76,12 +84,66 @@ var wms_estaciones_mio = L.tileLayer.wms(
     transparent: true,
   }
 ); */
+let ofertas;
 
-var wms_ofertas_cali = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
+// crear el grupo de capas
+
+var groupedOverlays = {
+  Comunas: wms_comunas,
+};
+
+//boton de prender capas
+var layerControl = L.control.layers(basemaps, groupedOverlays).addTo(mymap);
+
+traerDatosJSON(ruta).then((data) => {
+  ofertas = new L.GeoJSON(data, {
+    onEachFeature: (feature, layer) => {
+      layer.setStyle({
+        color: "black",
+        weight: 1.9,
+      });
+      layer.bindPopup(
+        '<h4 class = "text-primary">Inmuebles</h4>' +
+          '<div class="container"><table class="table table-striped">' +
+          "<thead><tr><th>Properties</th><th>Value</th></tr></thead>" +
+          "<tbody><tr><td> Barrio </td><td>" +
+          feature.properties.barrio +
+          "</td></tr>" +
+          "<tr><td>Comuna </td><td>" +
+          feature.properties.comuna +
+          "</td></tr>" +
+          "<tr><td> Tipo de oferta </td><td>" +
+          feature.properties.tipo_ofert +
+          "</td></tr>" +
+          "<tr><td> Estrato </td><td>" +
+          feature.properties.estrato +
+          "</td></tr>" +
+          "<tr><td> Acabados </td><td>" +
+          feature.properties.acabados +
+          "</td></tr>" +
+          "<tr><td> Tipo de inmueble </td><td>" +
+          feature.properties.inmueble +
+          "</td></tr>" +
+          "<tr><td> Estado </td><td>" +
+          feature.properties.estado +
+          "</td></tr>"
+      );
+    },
+    pointToLayer: (feature, latlng) => {
+      capa_ofertas = L.circleMarker(latlng, s_light_style);
+      groupedOverlays["Ofertas"] = capa_ofertas;
+      return capa_ofertas;
+    },
+  });
+  layerControl.addOverlay(ofertas, "Ofertas");
+  ofertas.addTo(mymap);
+});
+
+/* var wms_ofertas_cali = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
   layers: "ofertas_cali:ofertas_cali",
   format: "image/png",
   transparent: true,
-});
+}); */
 
 /* var wms_perimetro_urbano = L.tileLayer.wms(
   `${servidorGeoserver}ofertas_cali/wms`,
@@ -126,32 +188,6 @@ var wms_vias = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
 //contenido.addOverlay(wms_vias,"Capa vias");
 //contenido.addOverlay(marker,"Marcador");
 
-// crear el grupo de capas
-
-var groupedOverlays = {
-  "Capas Base": {
-    /* "Capa terrenos": wms_terrenos, */
-    /*  "Capa vias": wms_vias, */
-    "Capa comuna": wms_comunas,
-    /* "Capa perimetro urbano": wms_perimetro_urbano, */
-  },
-
-  "Capas Tematicas": {
-    /* "Capa educacion": wms_educacion,
-    "Capa cultura": wms_cultura,
-    "Capa recreacion": wms_recreacion,
-    "Capa salud": wms_salud,
-    "Capa culto": wms_culto,
-    "Capa deporte": wms_deporte,
-    "Capa seguridad": wms_seguridad,
-    "Capa estaciones mio": wms_estaciones_mio, */
-    "Capa ofertas inmobiliarias": wms_ofertas_cali,
-  },
-};
-
-//boton de prender capas
-L.control.groupedLayers(basemaps, groupedOverlays).addTo(mymap);
-
 // Agregar escala grafica con tamaño de 200 pixeles
 L.control
   .scale({
@@ -164,8 +200,8 @@ L.control
 //contenido.addTo(mymap);
 
 wms_comunas.addTo(mymap);
-wms_ofertas_cali.addTo(mymap);
-/* wms_perimetro_urbano.addTo(mymap);
+/*wms_ofertas_cali.addTo(mymap);
+ wms_perimetro_urbano.addTo(mymap);
 wms_terrenos.addTo(mymap);
 wms_educacion.addTo(mymap);
 wms_cultura.addTo(mymap);
@@ -177,3 +213,60 @@ wms_seguridad.addTo(mymap);
 wms_estaciones_mio.addTo(mymap);
 wms_vias.addTo(mymap); */
 street.addTo(mymap);
+
+wms_comunas.on("click", (event) => {
+  console.log(event);
+});
+
+L.easyButton(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-fill" viewBox="0 0 16 16">
+  <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>
+  <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Z"/>
+</svg>`,
+  function (btn, map) {
+    mymap.flyTo([3.42, -76.5221987], 13);
+  }
+).addTo(mymap);
+
+function thousands_separators(num) {
+  var num_parts = num.toString().split(".");
+  num_parts[0] = num_parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return num_parts.join(".");
+}
+
+const form = document.getElementById("comunas");
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const datoComuna = event.target["select-comunas"].value;
+  const datoEstado = event.target["select-estado"].value;
+  const datoTipo = event.target["select-tipo"].value;
+
+  traerDatosJSON(
+    `http://127.0.0.1:5000/api/estadistica/${datoComuna}/${datoEstado}/${datoTipo}`
+  ).then((data) => {
+    document.getElementById(
+      "resultado-modal"
+    ).innerHTML = `<table class="table">
+     <thead>
+       <tr>
+         <th scope="col">Inmueble</th>
+         <th scope="col">Promedio</th>
+         <th scope="col">Máximo</th>
+         <th scope="col">Mínimo</th>
+       </tr>
+     </thead>
+     <tbody>
+       ${data.map((dato) => {
+         return `<tr>
+        <td>${dato["tipo_inmueble"]}</td>
+        <td>$${thousands_separators(dato["promedio"])}</td>
+        <td>$${thousands_separators(dato["maximo"])}</td>
+        <td>$${thousands_separators(dato["minimo"])}</td>
+      </tr>`;
+       })}
+     </tbody>
+   </table>`;
+  });
+});

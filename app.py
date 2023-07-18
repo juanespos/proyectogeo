@@ -105,7 +105,18 @@ def login():
 @app.route('/inmobiliarias', methods=['GET', 'POST'])
 @login_required
 def ofertas():
-    return render_template('index.html')
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT DISTINCT comuna::int FROM ofertas_cali ORDER BY comuna ASC;")
+            datos = cursor.fetchall()
+            comunas = [dato[0] for dato in datos]
+            cursor.execute("SELECT DISTINCT estado::text FROM ofertas_cali;")
+            datos2 = cursor.fetchall()
+            estado = [dato[0] for dato in datos2]
+            cursor.execute("SELECT DISTINCT tipo_ofert::text FROM ofertas_cali;")
+            datos3 = cursor.fetchall()
+            tipo = [dato[0] for dato in datos3]
+    return render_template('index.html',lenCom=len(comunas),comunas=comunas,lenEst=len(estado),estado=estado,lenTipo=len(tipo),tipo=tipo)
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -132,26 +143,42 @@ def signup():
     return render_template('signup.html', form=form)
 
 
+
+
 # Backend
 
 
 # Consultas
-ESTADISTICA = """SELECT tipo_inmue, AVG(valor_pedi), MAX(valor_pedi), MIN(valor_pedi)
+ESTADISTICA = """SELECT inmueble, AVG(valor_pedi)::float, MAX(valor_pedi)::float, MIN(valor_pedi)::float
 FROM ofertas_cali
-WHERE comuna ilike '17' and estado ilike 'Nuevo' and tipo_ofert ilike 'Venta'
-GROUP BY tipo_inmue;"""
+WHERE comuna ilike %s and estado ilike %s and tipo_ofert ilike %s
+GROUP BY inmueble;"""
+
+
 # Terminan consultas
 
 
-@app.get("/api/estadistica")
-def get_estadistica():
+@app.get("/api/estadistica/<comuna>/<estado>/<tipo_oferta>")
+def get_estadistica(comuna,estado,tipo_oferta):
     with connection:
         with connection.cursor() as cursor:
-            cursor.execute(ESTADISTICA)
-            tipo_inmueble = cursor.fetchone()
-            promedio = cursor.fetchone()[1]
-    return {"tipo_inmueble": tipo_inmueble, "promedio": promedio}
+            cursor.execute(ESTADISTICA,(comuna,estado,tipo_oferta,))
+            datos = cursor.fetchall()
+    return [{
+        "tipo_inmueble": dato[0],
+        "promedio": dato[1],
+        "minimo": dato[3],
+        "maximo": dato[2],
+    } for dato in datos]
 
+@app.get("/api/comunas")
+def get_comunas():
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT DISTINCT comuna::int FROM ofertas_cali ORDER BY comuna ASC;")
+            datos = cursor.fetchall()
+    """ return {"comunas": [dato[0] for dato in datos]} """
+    return [{"comuna": dato[0]} for dato in datos]
 
 if __name__ == '__main__':
     app.run(debug=True)

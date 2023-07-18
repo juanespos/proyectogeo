@@ -2,6 +2,16 @@
   border: gray 0px ridge;
 }
 
+.leaflet-popup-content-wrapper {
+  border-radius: 0%;
+}
+
+.leaflet-popup-close-button {
+  color: red;
+  margin: 3%;
+  position: relative;
+}
+
 /* fondo main*/
 /* body{
 	background: gray;
