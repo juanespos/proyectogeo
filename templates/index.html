@@ -98,64 +98,350 @@
             >
               <h3>Consultas</h3>
               <hr />
-              <div>
-                <h5>Determinar estadísticas</h5>
-                <p>
-                  Determinar la estadística (promedio, maximo y minimo) por tipo
-                  de inmueble según la comuna, estado y tipo de oferta
-                  seleccionados.
-                </p>
-                <form action="" method="post" id="comunas">
-                  <select
-                    id="select-comunas"
-                    class="form-select"
-                    aria-label="Default select example"
+              <!-- Primera consulta -->
+              <div class="accordion" id="accordionExample">
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseOne"
+                      aria-expanded="true"
+                      aria-controls="collapseOne"
+                    >
+                      Determinar estadísticas
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseOne"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#accordionExample"
                   >
-                    <option>Seleccione la comuna</option>
-                    {%for i in range(0, lenCom)%}
-                    <option>{{comunas[i]}}</option>
-                    {%endfor%}
-                  </select>
-                  <select
-                    id="select-estado"
-                    class="form-select"
-                    aria-label="Default select example"
-                  >
-                    <option>Estado del inmueble</option>
-                    {%for i in range(0, lenEst)%}
-                    <option>{{estado[i]}}</option>
-                    {%endfor%}
-                  </select>
-                  <select
-                    id="select-tipo"
-                    class="form-select"
-                    aria-label="Default select example"
-                  >
-                    <option>Tipo de oferta</option>
-                    {%for i in range(0, lenTipo)%}
-                    <option>{{tipo[i]}}</option>
-                    {%endfor%}
-                  </select>
-                  <br />
-                  <button
-                    id="resultados"
-                    type="submit"
-                    class="btn btn-outline-secondary"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                  >
-                    Consultar valores
-                  </button>
-                </form>
+                    <div class="accordion-body">
+                      <p>
+                        Determinar la estadística (promedio, maximo y minimo) y
+                        ubicación espacial de las ofertas inmobiliarias según la
+                        comuna, estado y tipo de oferta seleccionados.
+                      </p>
+                      <form action="" method="post" id="comunas">
+                        <select
+                          id="select-comunas"
+                          class="form-select"
+                          aria-label="Default select example"
+                        >
+                          <option>Seleccione la comuna</option>
+                          {%for i in range(0, lenCom)%}
+                          <option>{{comunas[i]}}</option>
+                          {%endfor%}
+                        </select>
+                        <select
+                          id="select-estado"
+                          class="form-select"
+                          aria-label="Default select example"
+                        >
+                          <option>Estado del inmueble</option>
+                          {%for i in range(0, lenEst)%}
+                          <option>{{estado[i]}}</option>
+                          {%endfor%}
+                        </select>
+                        <select
+                          id="select-tipo"
+                          class="form-select"
+                          aria-label="Default select example"
+                        >
+                          <option>Tipo de oferta</option>
+                          {%for i in range(0, lenTipo)%}
+                          <option>{{tipo[i]}}</option>
+                          {%endfor%}
+                        </select>
+                        <br />
+                        <button
+                          id="resultados"
+                          type="submit"
+                          class="btn btn-outline-secondary"
+                          data-bs-toggle="modal"
+                          data-bs-target="#exampleModal"
+                        >
+                          Consultar valores
+                        </button>
+                      </form>
 
-                <button
-                  id="reiniciar-consulta"
-                  onclick="reiniciarConsulta()"
-                  class="btn btn-outline-secondary"
-                  disabled="true"
-                >
-                  Reiniciar consulta
-                </button>
+                      <button
+                        id="reiniciar-consulta"
+                        onclick="reiniciarConsulta()"
+                        class="btn btn-outline-secondary"
+                        disabled="true"
+                      >
+                        Reiniciar consulta
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseTwo"
+                      aria-expanded="false"
+                      aria-controls="collapseTwo"
+                    >
+                      Ubicación ofertas
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseTwo"
+                    class="accordion-collapse collapse show"
+                    data-bs-parent="#accordionExample"
+                  >
+                    <div class="accordion-body">
+                      <p>
+                        Ubicación de ofertas según su tipo de oferta, tipo de
+                        inmueble, comuna y rangos de precios
+                      </p>
+                      <form action="" method="post" id="ofertas-precio">
+                        <select
+                          id="select-comunas"
+                          class="form-select"
+                          aria-label="Default select example"
+                        >
+                          <option>Seleccione la comuna</option>
+                          {%for i in range(0, lenCom)%}
+                          <option>{{comunas[i]}}</option>
+                          {%endfor%}
+                        </select>
+                        <select
+                          id="select-inmueble"
+                          class="form-select"
+                          aria-label="Default select example"
+                        >
+                          <option>Tipo de inmueble</option>
+                          {%for i in range(0, lenInmueble)%}
+                          <option>{{inmueble[i]}}</option>
+                          {%endfor%}
+                        </select>
+                        <select
+                          id="select-tipo"
+                          class="form-select"
+                          aria-label="Default select example"
+                        >
+                          <option>Tipo de oferta</option>
+                          {%for i in range(0, lenTipo)%}
+                          <option>{{tipo[i]}}</option>
+                          {%endfor%}
+                        </select>
+                        Desde
+                        <div class="input-group">
+                          <div class="input-group-text">$</div>
+                          <input
+                            type="number"
+                            class="form-control"
+                            placeholder="90,000,000"
+                            aria-label="First name"
+                          />
+                        </div>
+                        Hasta
+                        <div class="input-group">
+                          <div class="input-group-text">$</div>
+                          <input
+                            type="number"
+                            class="form-control"
+                            placeholder="180,000,000"
+                            aria-label="Last name"
+                          />
+                        </div>
+
+                        <br />
+                        <button
+                          id="resultados-precios"
+                          type="submit"
+                          class="btn btn-outline-secondary"
+                        >
+                          Consultar ofertas
+                        </button>
+                      </form>
+
+                      <button
+                        id="reiniciar-consulta2"
+                        onclick="reiniciarConsulta2()"
+                        class="btn btn-outline-secondary"
+                        disabled="true"
+                      >
+                        Reiniciar consulta
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseThree"
+                      aria-expanded="false"
+                      aria-controls="collapseThree"
+                    >
+                      Consulta 3
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseThree"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#accordionExample"
+                  >
+                    <div class="accordion-body">Prueba Consulta</div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseFour"
+                      aria-expanded="false"
+                      aria-controls="collapseFour"
+                    >
+                      Consulta 4
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseFour"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#accordionExample"
+                  >
+                    <div class="accordion-body">Prueba Consulta</div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseFive"
+                      aria-expanded="false"
+                      aria-controls="collapseFive"
+                    >
+                      Consulta 5
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseFive"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#accordionExample"
+                  >
+                    <div class="accordion-body">Prueba Consulta</div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseSix"
+                      aria-expanded="false"
+                      aria-controls="collapseSix"
+                    >
+                      Consulta 6
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseSix"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#accordionExample"
+                  >
+                    <div class="accordion-body">Prueba Consulta</div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseSeven"
+                      aria-expanded="false"
+                      aria-controls="collapseSeven"
+                    >
+                      Consulta 7
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseSeven"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#accordionExample"
+                  >
+                    <div class="accordion-body">Prueba Consulta</div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseEight"
+                      aria-expanded="false"
+                      aria-controls="collapseEight"
+                    >
+                      Consulta 8
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseEight"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#accordionExample"
+                  >
+                    <div class="accordion-body">Prueba Consulta</div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseNine"
+                      aria-expanded="false"
+                      aria-controls="collapseNine"
+                    >
+                      Consulta 9
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseNine"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#accordionExample"
+                  >
+                    <div class="accordion-body">Prueba Consulta</div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseTen"
+                      aria-expanded="false"
+                      aria-controls="collapseTen"
+                    >
+                      Consulta 10
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseTen"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#accordionExample"
+                  >
+                    <div class="accordion-body">Prueba Consulta</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

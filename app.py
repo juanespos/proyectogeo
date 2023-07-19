@@ -121,7 +121,10 @@ def ofertas():
             cursor.execute("SELECT DISTINCT tipo_ofert::text FROM ofertas_cali;")
             datos3 = cursor.fetchall()
             tipo = [dato[0] for dato in datos3]
-    return render_template('index.html',lenCom=len(comunas),comunas=comunas, comunas_completas=comunas_completas,lenEst=len(estado),estado=estado,lenTipo=len(tipo),tipo=tipo)
+            cursor.execute("SELECT DISTINCT inmueble::text FROM ofertas_cali;")
+            datos4 = cursor.fetchall()
+            inmueble = [dato[0] for dato in datos4]
+    return render_template('index.html',lenCom=len(comunas),comunas=comunas, comunas_completas=comunas_completas,lenEst=len(estado),estado=estado,lenTipo=len(tipo),tipo=tipo,lenInmueble=len(inmueble), inmueble=inmueble)
 
 
 @app.route('/logout', methods=['GET', 'POST'])

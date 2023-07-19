@@ -1,9 +1,9 @@
 // declarar variables de mapa base street
+const servidorGeoserver = "http://localhost:8080/geoserver/";
 
 var mymap = L.map("mapid").setView([3.42, -76.5221987], 13);
 
-const ruta =
-  "http://localhost:8080/geoserver/ofertas_cali/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ofertas_cali%3Aofertas_cali&outputFormat=application%2Fjson";
+const ruta = `${servidorGeoserver}ofertas_cali/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ofertas_cali%3Aofertas_cali&outputFormat=application%2Fjson`;
 
 const traerDatosJSON = async (url) => {
   const response = await (await fetch(url)).json();
@@ -40,8 +40,6 @@ var basemaps = {
 };
 
 // declarar variables de cada capa
-
-const servidorGeoserver = "http://localhost:8080/geoserver/";
 
 /* var wms_educacion = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
   layers: "ofertas_cali:educacion",
@@ -243,6 +241,7 @@ function thousands_separators(num) {
   return num_parts.join(".");
 }
 
+/* PRIMERA CONSULTA */
 const form = document.getElementById("comunas");
 
 form.addEventListener("submit", (event) => {
@@ -362,4 +361,35 @@ const reiniciarConsulta = () => {
   layerControl.removeLayer(ofertasSelect);
   ofertas.addTo(mymap);
   mymap.flyTo([3.42, -76.5221987], 13);
+};
+
+/* SEGUNDA_CONSULTA */
+document
+  .getElementById("ofertas-precio")
+  .addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    document
+      .querySelector("button#reiniciar-consulta2")
+      .removeAttribute("disabled");
+  });
+
+const reiniciarConsulta2 = () => {
+  /* Se reinicia el formulario de consulta */
+  document.querySelector("#ofertas-precio #select-comunas").value =
+    "Seleccione la comuna";
+  document.querySelector("#ofertas-precio #select-inmueble").value =
+    "Tipo de inmueble";
+  document.querySelector("#ofertas-precio #select-tipo").value =
+    "Tipo de oferta";
+
+  /* Se habilita el botón de reiniciar consulta */
+  document
+    .querySelector("button#reiniciar-consulta2")
+    .setAttribute("disabled", true);
+  /* Se remueven las capas de consulta */
+  /* mymap.removeLayer(ofertasSelect);
+    layerControl.removeLayer(ofertasSelect);
+    ofertas.addTo(mymap);
+    mymap.flyTo([3.42, -76.5221987], 13); */
 };
