@@ -11,7 +11,7 @@ const traerDatosJSON = async (url) => {
 };
 
 var s_light_style = {
-  radius: 4,
+  radius: 6,
   fillColor: "#ff7800",
   color: "#000",
   weight: 1,
@@ -20,7 +20,7 @@ var s_light_style = {
 };
 
 var s_light_style_consulta = {
-  radius: 4,
+  radius: 5,
   fillColor: "#38761d",
   color: "#000",
   weight: 1,
@@ -102,6 +102,8 @@ var groupedOverlays = {
 //boton de prender capas
 var layerControl = L.control.layers(basemaps, groupedOverlays).addTo(mymap);
 
+const markers = L.markerClusterGroup();
+
 traerDatosJSON(ruta).then((data) => {
   ofertas = new L.GeoJSON(data, {
     onEachFeature: (feature, layer) => {
@@ -139,7 +141,7 @@ traerDatosJSON(ruta).then((data) => {
     pointToLayer: (feature, latlng) => {
       capa_ofertas = L.circleMarker(latlng, s_light_style);
       groupedOverlays["Ofertas"] = capa_ofertas;
-      return capa_ofertas;
+      return markers.addLayer(capa_ofertas);
     },
   });
   layerControl.addOverlay(ofertas, "Ofertas");
@@ -241,7 +243,7 @@ function thousands_separators(num) {
   return num_parts.join(".");
 }
 
-/* PRIMERA CONSULTA */
+/*************************** PRIMERA_CONSULTA  ***************************/
 const form = document.getElementById("comunas");
 
 form.addEventListener("submit", (event) => {
@@ -344,6 +346,14 @@ outputFormat=application%2Fjson`;
   });
 
   mymap.flyTo([comunasFiltra[0].lat, comunasFiltra[0].lng], 14);
+
+  try {
+    mymap.removeLayer(ofertasSelect);
+    layerControl.removeLayer(ofertasSelect);
+    groupedOverlays["Ofertas select"] = null;
+  } catch (error) {
+    console.log("No se ha definido la capa");
+  }
 });
 
 const reiniciarConsulta = () => {
@@ -362,8 +372,8 @@ const reiniciarConsulta = () => {
   ofertas.addTo(mymap);
   mymap.flyTo([3.42, -76.5221987], 13);
 };
-
-/* SEGUNDA_CONSULTA */
+/*************************** TERMINA PRIMERA_CONSULTA  ***************************/
+/*************************** SEGUNDA_CONSULTA  ***************************/
 document
   .getElementById("ofertas-precio")
   .addEventListener("submit", (event) => {
@@ -393,3 +403,4 @@ const reiniciarConsulta2 = () => {
     ofertas.addTo(mymap);
     mymap.flyTo([3.42, -76.5221987], 13); */
 };
+/*************************** TERMINA SEGUNDA_CONSULTA  ***************************/
