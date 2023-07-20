@@ -100,8 +100,8 @@
             >
               <h3>Consultas</h3>
               <hr />
-              <!-- Primera consulta -->
               <div class="accordion" id="accordionExample">
+                <!-- Primera consulta -->
                 <div class="accordion-item">
                   <h2 class="accordion-header">
                     <button
@@ -180,22 +180,23 @@
                     </div>
                   </div>
                 </div>
+                <!-- Segunda consulta -->
                 <div class="accordion-item">
                   <h2 class="accordion-header">
                     <button
-                      class="accordion-button"
+                      class="accordion-button collapsed"
                       type="button"
                       data-bs-toggle="collapse"
                       data-bs-target="#collapseTwo"
                       aria-expanded="false"
                       aria-controls="collapseTwo"
                     >
-                      Ubicación ofertas
+                      Búsqueda de ofertas
                     </button>
                   </h2>
                   <div
                     id="collapseTwo"
-                    class="accordion-collapse collapse show"
+                    class="accordion-collapse collapse"
                     data-bs-parent="#accordionExample"
                   >
                     <div class="accordion-body">
@@ -278,25 +279,80 @@
                     </div>
                   </div>
                 </div>
+                <!-- Tercera consulta -->
                 <div class="accordion-item">
                   <h2 class="accordion-header">
                     <button
-                      class="accordion-button collapsed"
+                      class="accordion-button"
                       type="button"
                       data-bs-toggle="collapse"
                       data-bs-target="#collapseThree"
                       aria-expanded="false"
                       aria-controls="collapseThree"
                     >
-                      Consulta 3
+                      Búsqueda de apartamentos
                     </button>
                   </h2>
                   <div
                     id="collapseThree"
-                    class="accordion-collapse collapse"
+                    class="accordion-collapse collapse show"
                     data-bs-parent="#accordionExample"
                   >
-                    <div class="accordion-body">Prueba Consulta</div>
+                    <div class="accordion-body">
+                      <p>
+                        Búsqueda de apartamentos según la comuna, estado y tipo
+                        de oferta seleccionados.
+                      </p>
+                      <form action="" method="post" id="busqueda-apartamentos">
+                        <select
+                          id="select-comunas"
+                          class="form-select"
+                          aria-label="Default select example"
+                        >
+                          <option>Seleccione la comuna</option>
+                          {%for i in range(0, lenCom)%}
+                          <option>{{comunas[i]}}</option>
+                          {%endfor%}
+                        </select>
+                        <select
+                          id="select-estado"
+                          class="form-select"
+                          aria-label="Default select example"
+                        >
+                          <option>Estado del inmueble</option>
+                          {%for i in range(0, lenEst)%}
+                          <option>{{estado[i]}}</option>
+                          {%endfor%}
+                        </select>
+                        <select
+                          id="select-tipo"
+                          class="form-select"
+                          aria-label="Default select example"
+                        >
+                          <option>Tipo de oferta</option>
+                          {%for i in range(0, lenTipo)%}
+                          <option>{{tipo[i]}}</option>
+                          {%endfor%}
+                        </select>
+                        <br />
+                        <button
+                          id="resultados"
+                          type="submit"
+                          class="btn btn-outline-secondary"
+                        >
+                          Consultar valores
+                        </button>
+                      </form>
+
+                      <button
+                        id="reiniciar-consulta3"
+                        onclick="reiniciarConsulta3()"
+                        class="btn btn-outline-secondary"
+                        disabled="true"
+                      >
+                        Reiniciar consulta
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div class="accordion-item">
