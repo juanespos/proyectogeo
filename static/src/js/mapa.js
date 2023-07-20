@@ -114,7 +114,7 @@ traerDatosJSON(ruta).then((data) => {
       layer.bindPopup(
         '<h4 class = "text-primary">Inmuebles</h4>' +
           '<div class="container"><table class="table table-striped">' +
-          "<thead><tr><th>Properties</th><th>Value</th></tr></thead>" +
+          "<thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>" +
           "<tbody><tr><td> Barrio </td><td>" +
           feature.properties.barrio +
           "</td></tr>" +
@@ -257,6 +257,7 @@ form.addEventListener("submit", (event) => {
   const datoEstado = event.target["select-estado"].value;
   const datoTipo = event.target["select-tipo"].value;
 
+  // Lo siguiente es para conocer el centroide de la comuna seleccionada
   const comunasCompletas = document
     .querySelector("#mapa-despliegue")
     .getAttribute("comunas_completas");
@@ -264,8 +265,8 @@ form.addEventListener("submit", (event) => {
   const comunasFiltra = JSON.parse(comunasCompletas.replace(/'/g, '"')).filter(
     (element) => element.comuna == datoComuna
   );
-
   console.log(comunasFiltra[0].lat, comunasFiltra[0].lng);
+  // Finaliza traer las coords del centroide
 
   traerDatosJSON(
     `http://127.0.0.1:5000/api/estadistica/${datoComuna}/${datoEstado}/${datoTipo}`
@@ -313,7 +314,7 @@ outputFormat=application%2Fjson`;
         layer.bindPopup(
           '<h4 class = "text-primary">Inmuebles</h4>' +
             '<div class="container"><table class="table table-striped">' +
-            "<thead><tr><th>Properties</th><th>Value</th></tr></thead>" +
+            "<thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>" +
             "<tbody><tr><td> Barrio </td><td>" +
             feature.properties.barrio +
             "</td></tr>" +
@@ -382,9 +383,126 @@ document
     document
       .querySelector("button#reiniciar-consulta2")
       .removeAttribute("disabled");
+
+    const datoComuna = event.target["select-comunas"].value;
+    const datoInmueble = event.target["select-inmueble"].value;
+    const datoTipo = event.target["select-tipo"].value;
+    const datoDesde = event.target["select-precio-desde"].value;
+    const datoHasta = event.target["select-precio-hasta"].value;
+
+    console.log(datoComuna, datoInmueble, datoTipo, datoDesde, datoHasta);
+
+    // Lo siguiente es para conocer el centroide de la comuna seleccionada
+    const comunasCompletas = document
+      .querySelector("#mapa-despliegue")
+      .getAttribute("comunas_completas");
+
+    const comunasFiltra = JSON.parse(
+      comunasCompletas.replace(/'/g, '"')
+    ).filter((element) => element.comuna == datoComuna);
+    console.log(comunasFiltra[0].lat, comunasFiltra[0].lng);
+    // Finaliza traer las coords del centroide
+
+    const urlConsulta = `http://localhost:8080/geoserver/ofertas_cali/ows?
+service=WFS&
+version=1.0.0&
+request=GetFeature&
+typeName=ofertas_cali:ofertas_precio&
+viewparams=comuna:${datoComuna};inmueble:${datoInmueble};tipo_ofert:${datoTipo};min:${datoDesde};max:${datoHasta}&
+outputFormat=application%2Fjson`;
+
+    traerDatosJSON(urlConsulta).then((data) => {
+      ofertasSelect = new L.GeoJSON(data, {
+        onEachFeature: (feature, layer) => {
+          layer.setStyle({
+            color: "black",
+            weight: 1.9,
+          });
+          layer.bindPopup(
+            '<h4 class = "text-primary">Inmuebles</h4>' +
+              '<div class="container"><table class="table table-striped">' +
+              "<thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>" +
+              "<tbody><tr><td> Barrio </td><td>" +
+              feature.properties.barrio +
+              "</td></tr>" +
+              "<tr><td> Comuna </td><td>" +
+              feature.properties.comuna +
+              "</td></tr>" +
+              "<tr><td> Tipo de oferta </td><td>" +
+              feature.properties.tipo_ofert +
+              "</td></tr>" +
+              "<tr><td> Estrato </td><td>" +
+              feature.properties.estrato +
+              "</td></tr>" +
+              "<tr><td> Estado </td><td>" +
+              feature.properties.estado +
+              "</td></tr>" +
+              "<tr><td> Valor pedido </td><td>$" +
+              thousands_separators(feature.properties.valor_pedi) +
+              "</td></tr>"
+          );
+        },
+        pointToLayer: (feature, latlng) => {
+          capa_ofertas = L.circleMarker(latlng, s_light_style_consulta);
+          groupedOverlays["Ofertas rango precios"] = capa_ofertas;
+          return capa_ofertas;
+        },
+      });
+      layerControl.addOverlay(ofertasSelect, "Ofertas rango precios");
+      ofertas.remove(mymap);
+      ofertasSelect.addTo(mymap);
+    });
+
+    mymap.flyTo([comunasFiltra[0].lat, comunasFiltra[0].lng], 14);
+
+    try {
+      mymap.removeLayer(ofertasSelect);
+      layerControl.removeLayer(ofertasSelect);
+      groupedOverlays["Ofertas rango precios"] = null;
+    } catch (error) {
+      console.log("No se ha definido la capa");
+    }
   });
 
 const reiniciarConsulta2 = () => {
+  /* Se reinicia el formulario de consulta */
+  document.querySelector("#ofertas-precio #select-comunas").value =
+    "Seleccione la comuna";
+  document.querySelector("#ofertas-precio #select-inmueble").value =
+    "Tipo de inmueble";
+  document.querySelector("#ofertas-precio #select-tipo").value =
+    "Tipo de oferta";
+
+  /* Se habilita el botón de reiniciar consulta */
+  document
+    .querySelector("button#reiniciar-consulta2")
+    .setAttribute("disabled", true);
+  /* Se remueven las capas de consulta */
+  mymap.removeLayer(ofertasSelect);
+  layerControl.removeLayer(ofertasSelect);
+  ofertas.addTo(mymap);
+  mymap.flyTo([3.42, -76.5221987], 13);
+};
+/*************************** TERMINA SEGUNDA_CONSULTA  ***************************/
+
+/*************************** TERCERA_CONSULTA  ***************************/
+/* document
+  .getElementById("ofertas-precio3")
+  .addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    document
+      .querySelector("button#reiniciar-consulta2")
+      .removeAttribute("disabled");
+
+    const datoComuna = event.target["select-comunas"].value;
+    const datoInmueble = event.target["select-inmueble"].value;
+    const datoTipo = event.target["select-tipo"].value;
+    const datoDesde = event.target["select-precio-desde"].value;
+    const datoHasta = event.target["select-precio-desde"].value;
+  }); */
+
+const reiniciarConsulta3 = () => {
   /* Se reinicia el formulario de consulta */
   document.querySelector("#ofertas-precio #select-comunas").value =
     "Seleccione la comuna";
@@ -403,4 +521,4 @@ const reiniciarConsulta2 = () => {
     ofertas.addTo(mymap);
     mymap.flyTo([3.42, -76.5221987], 13); */
 };
-/*************************** TERMINA SEGUNDA_CONSULTA  ***************************/
+/*************************** TERMINA TERCERA_CONSULTA  ***************************/
