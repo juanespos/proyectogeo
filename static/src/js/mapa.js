@@ -1,5 +1,6 @@
 // declarar variables de mapa base street
 const servidorGeoserver = "http://localhost:8080/geoserver/";
+let ofertaUbicada;
 
 var mymap = L.map("mapid").setView([3.42, -76.5221987], 13);
 
@@ -22,6 +23,15 @@ var s_light_style = {
 var s_light_style_consulta = {
   radius: 5,
   fillColor: "#38761d",
+  color: "#000",
+  weight: 1,
+  opacity: 1,
+  fillOpacity: 0.8,
+};
+
+var s_light_style_mio = {
+  radius: 7,
+  fillColor: "#004444",
   color: "#000",
   weight: 1,
   opacity: 1,
@@ -102,7 +112,7 @@ var groupedOverlays = {
 //boton de prender capas
 var layerControl = L.control.layers(basemaps, groupedOverlays).addTo(mymap);
 
-const markers = L.markerClusterGroup();
+let markers = L.markerClusterGroup();
 
 traerDatosJSON(ruta).then((data) => {
   ofertas = new L.GeoJSON(data, {
@@ -144,11 +154,12 @@ traerDatosJSON(ruta).then((data) => {
     pointToLayer: (feature, latlng) => {
       capa_ofertas = L.circleMarker(latlng, s_light_style);
       groupedOverlays["Ofertas"] = capa_ofertas;
-      return markers.addLayer(capa_ofertas);
+      return capa_ofertas;
     },
   });
-  layerControl.addOverlay(ofertas, "Ofertas");
-  ofertas.addTo(mymap);
+  markers.addLayer(ofertas);
+  layerControl.addOverlay(markers, "Ofertas");
+  markers.addTo(mymap);
 });
 
 /* var wms_ofertas_cali = L.tileLayer.wms(`${servidorGeoserver}ofertas_cali/wms`, {
@@ -348,7 +359,7 @@ outputFormat=application%2Fjson`;
       },
     });
     layerControl.addOverlay(ofertasSelect, "Ofertas select");
-    ofertas.remove(mymap);
+    markers.remove(mymap);
     ofertasSelect.addTo(mymap);
   });
 
@@ -452,7 +463,7 @@ outputFormat=application%2Fjson`;
         },
       });
       layerControl.addOverlay(ofertasSelect, "Ofertas rango precios");
-      ofertas.remove(mymap);
+      markers.remove(mymap);
       ofertasSelect.addTo(mymap);
     });
 
@@ -483,7 +494,7 @@ const reiniciarConsulta2 = () => {
   /* Se remueven las capas de consulta */
   mymap.removeLayer(ofertasSelect);
   layerControl.removeLayer(ofertasSelect);
-  ofertas.addTo(mymap);
+  markers.addTo(mymap);
   mymap.flyTo([3.42, -76.5221987], 13);
 };
 /*************************** TERMINA SEGUNDA_CONSULTA  ***************************/
@@ -563,7 +574,7 @@ outputFormat=application%2Fjson`;
         },
       });
       layerControl.addOverlay(ofertasSelect, "Apartamentos");
-      ofertas.remove(mymap);
+      markers.remove(mymap);
       ofertasSelect.addTo(mymap);
     });
 
@@ -594,11 +605,224 @@ const reiniciarConsulta3 = () => {
   /* Se remueven las capas de consulta */
   mymap.removeLayer(ofertasSelect);
   layerControl.removeLayer(ofertasSelect);
-  ofertas.addTo(mymap);
+  markers.addTo(mymap);
   mymap.flyTo([3.42, -76.5221987], 13);
 };
 /*************************** TERMINA TERCERA_CONSULTA  ***************************/
 /*************************** CUARTA_CONSULTA  ***************************/
+
+const habilitarConsulta4 = () => {
+  alert("Se habilitó la consulta de estaciones cercanas");
+  // Función toggle
+  document
+    .querySelector("button#reiniciar-consulta4")
+    .removeAttribute("disabled");
+  document
+    .querySelector("button#habilitar-consulta4")
+    .setAttribute("disabled", true);
+  // Termina toggle
+
+  mymap.removeLayer(markers);
+  layerControl.removeLayer(markers);
+  //markers.addTo(mymap);
+
+  markers = L.markerClusterGroup();
+
+  const zoomToFeature = (e) => {
+    console.log(e.latlng.lat, e.latlng.lng);
+    mymap.flyTo([e.latlng.lat, e.latlng.lng], 17);
+  };
+
+  traerDatosJSON(ruta).then((data) => {
+    ofertas = new L.GeoJSON(data, {
+      onEachFeature: (feature, layer) => {
+        layer.setStyle({
+          color: "black",
+          weight: 1.9,
+        });
+        layer.on({
+          click: zoomToFeature,
+        });
+        layer.bindPopup(
+          `<h4 class = "text-primary">Inmuebles</h4>
+              <div class="container">
+                <table class="table table-striped">
+                  <thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>
+                  <tbody>
+                    <tr><td> Barrio </td><td>${
+                      feature.properties.barrio
+                    }</td></tr>
+                    <tr><td> Comuna </td><td>${
+                      feature.properties.comuna
+                    }</td></tr>
+                    <tr><td> Valor pedido </td><td>${thousands_separators(
+                      feature.properties.valor_pedi
+                    )}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            
+            <button
+                id="reiniciar-consulta4"
+                onclick="traerEstacionesMIO(${feature.id.substr(
+                  13,
+                  feature.id.length
+                )},${feature.geometry.coordinates[0]},${
+            feature.geometry.coordinates[1]
+          })"
+                class="btn btn-success"
+              >
+                Estaciones MIO
+            </button>`
+        );
+      },
+      pointToLayer: (feature, latlng) => {
+        capa_ofertas = L.circleMarker(latlng, s_light_style);
+        groupedOverlays["Ofertas"] = capa_ofertas;
+        return capa_ofertas;
+      },
+    });
+    markers.addLayer(ofertas);
+    layerControl.addOverlay(markers, "Ofertas");
+    markers.addTo(mymap);
+  });
+};
+
+const reiniciarConsulta4 = () => {
+  document
+    .querySelector("button#habilitar-consulta4")
+    .removeAttribute("disabled");
+  document
+    .querySelector("button#reiniciar-consulta4")
+    .setAttribute("disabled", true);
+
+  mymap.removeLayer(markers);
+  layerControl.removeLayer(markers);
+  //markers.addTo(mymap);
+
+  markers = L.markerClusterGroup();
+
+  traerDatosJSON(ruta).then((data) => {
+    ofertas = new L.GeoJSON(data, {
+      onEachFeature: (feature, layer) => {
+        layer.setStyle({
+          color: "black",
+          weight: 1.9,
+        });
+        layer.bindPopup(
+          '<h4 class = "text-primary">Inmuebles</h4>' +
+            '<div class="container"><table class="table table-striped">' +
+            "<thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>" +
+            "<tbody><tr><td> Barrio </td><td>" +
+            feature.properties.barrio +
+            "</td></tr>" +
+            "<tr><td>Comuna </td><td>" +
+            feature.properties.comuna +
+            "</td></tr>" +
+            "<tr><td> Tipo de inmueble </td><td>" +
+            feature.properties.inmueble +
+            "</td></tr>" +
+            "<tr><td> Tipo de oferta </td><td>" +
+            feature.properties.tipo_ofert +
+            "</td></tr>" +
+            "<tr><td> Estrato </td><td>" +
+            feature.properties.estrato +
+            "</td></tr>" +
+            "<tr><td> Acabados </td><td>" +
+            feature.properties.acabados +
+            "</td></tr>" +
+            "<tr><td> Tipo de inmueble </td><td>" +
+            feature.properties.inmueble +
+            "</td></tr>" +
+            "<tr><td> Estado </td><td>" +
+            feature.properties.estado +
+            "</td></tr>"
+        );
+      },
+      pointToLayer: (feature, latlng) => {
+        capa_ofertas = L.circleMarker(latlng, s_light_style);
+        groupedOverlays["Ofertas"] = capa_ofertas;
+        return capa_ofertas;
+      },
+    });
+    markers.addLayer(ofertas);
+    layerControl.addOverlay(markers, "Ofertas");
+    markers.addTo(mymap);
+  });
+
+  /* Se remueven las capas de consulta */
+  mymap.removeLayer(ofertasSelect);
+  mymap.removeLayer(ofertaUbicada);
+  layerControl.removeLayer(ofertasSelect);
+  markers.addTo(mymap);
+  mymap.flyTo([3.42, -76.5221987], 13);
+};
+
+const traerEstacionesMIO = (valor, x, y) => {
+  console.log("TRAIGA ESTACIONES CERCANAS A VALOR", valor);
+
+  try {
+    mymap.removeLayer(ofertaUbicada);
+    mymap.removeLayer(ofertasSelect);
+    layerControl.removeLayer(ofertasSelect);
+  } catch (error) {
+    console.log("No se ha agregado aún la capa");
+  }
+
+  ofertaUbicada = L.marker([y, x], s_light_style);
+
+  ofertaUbicada.addTo(mymap).bindPopup("Oferta seleccionada");
+
+  const urlConsulta = `${servidorGeoserver}ofertas_cali/ows?
+service=WFS&
+version=1.0.0&
+request=GetFeature&
+typeName=ofertas_cali:ofertas_miocercanas&
+viewparams=gid:${valor}&
+outputFormat=application%2Fjson`;
+
+  traerDatosJSON(urlConsulta).then((data) => {
+    ofertasSelect = new L.GeoJSON(data, {
+      onEachFeature: (feature, layer) => {
+        layer.setStyle({
+          color: "black",
+          weight: 1.9,
+        });
+        layer.bindPopup(
+          `<h4 class = "text-primary">Estación MIO</h4>
+              <div class="container">
+                <table class="table table-striped">
+                  <thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>
+                  <tbody>
+                    <tr><td> Estación </td><td>${
+                      feature.properties.estacion
+                    }</td></tr>
+                    <tr><td> Dirección </td><td>${
+                      feature.properties.direccion
+                    }</td></tr>
+                    <tr><td> Distancia al inmueble </td><td>${feature.properties.distancia.toFixed(
+                      2
+                    )} m</td></tr>
+                  </tbody>
+                </table>
+              </div>`
+        );
+      },
+      pointToLayer: (feature, latlng) => {
+        capa_ofertas = L.circleMarker(latlng, s_light_style_mio);
+        groupedOverlays["Estaciones MIO"] = capa_ofertas;
+        return capa_ofertas;
+      },
+    });
+    layerControl.addOverlay(ofertasSelect, "Estaciones MIO");
+    markers.remove(mymap);
+    ofertasSelect.addTo(mymap);
+  });
+
+  mymap.setZoom(14);
+};
+/*************************** TERMINA CUARTA_CONSULTA  ***************************/
+/*************************** QUINTA_CONSULTA  ***************************/
 /* document
   .getElementById("busqueda-apartamentos")
   .addEventListener("submit", (event) => {
@@ -614,7 +838,7 @@ const reiniciarConsulta3 = () => {
     console.log(datoComuna, datoEstado, datoTipo);
   }); */
 
-const reiniciarConsulta4 = () => {
+const reiniciarConsulta5 = () => {
   /* Se reinicia el formulario de consulta */
   document.querySelector("#busqueda-apartamentos #select-comunas").value =
     "Seleccione la comuna";
@@ -633,4 +857,4 @@ const reiniciarConsulta4 = () => {
     ofertas.addTo(mymap);
     mymap.flyTo([3.42, -76.5221987], 13); */
 };
-/*************************** TERMINA CUARTA_CONSULTA  ***************************/
+/*************************** TERMINA QUINTA_CONSULTA  ***************************/
