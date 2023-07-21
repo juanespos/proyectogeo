@@ -209,15 +209,15 @@ INGRESA = """INSERT INTO ofertas_cali(
 	valor_pedi,
 	the_geom
 ) VALUES (
-	'Prueba Barrio',
-	'3',
-	'Apartamento',
-	'Alquiler',
-	'4',
-	'Obra Blanca',
-	'Nuevo',
-	1300000,
-	ST_GeometryFromText('Point(-76.4916 3.4396)')
+	%s,
+	%s,
+	%s,
+	%s,
+	%s,
+	%s,
+	%s,
+	%s,
+	ST_GeometryFromText(%s)
 )"""
 
 
@@ -255,7 +255,12 @@ def editar_oferta(tipo_ofert,inmueble,acabados,estado,valor_pedi,id_oferta):
     return {"Se editó la oferta con ID": id_oferta}
 
 ## Agregar
-
+@app.post("/api/agrega_oferta/<barrio>/<comuna>/<inmueble>/<tipo_ofert>/<estrato>/<acabados>/<estado>/<valor_pedi>/<datoGeom>")
+def agregar_oferta(barrio,comuna,inmueble,tipo_ofert,estrato,acabados,estado,valor_pedi,datoGeom):
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute(INGRESA,(barrio,comuna,inmueble,tipo_ofert,estrato,acabados,estado,valor_pedi,datoGeom,))
+    return {"Mensaje": "Se agregó una nueva oferta"}
 
 if __name__ == '__main__':
     app.run(debug=True)

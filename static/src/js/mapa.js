@@ -26,6 +26,14 @@ const APIEditarOferta = async (url) => {
   ).json();
   return response;
 };
+const APIIngresarOferta = async (url) => {
+  const response = await (
+    await fetch(url, {
+      method: "POST", // or 'PUT'
+    })
+  ).json();
+  return response;
+};
 
 var s_light_style = {
   radius: 6,
@@ -1009,6 +1017,8 @@ const desEliminarOfertas = () => {
 };
 /*************************** TERMINA ELIMINAR OFERTAS  ***************************/
 /*************************** INGRESAR OFERTAS  ***************************/
+const popup = L.popup();
+
 const ingresarOfertas = () => {
   console.log("Se habilita ingresar ofertas");
   document
@@ -1017,8 +1027,185 @@ const ingresarOfertas = () => {
   document
     .querySelector("button#habilitar-ingresar-oferta")
     .setAttribute("disabled", true);
+
+  const onMapClick = (e) => {
+    popup
+      .setLatLng(e.latlng)
+      .setContent(
+        `<h4 class = "text-primary">Crear nueva oferta</h4>      
+            <form action="" method="post" id="ingresar-oferta">
+            Barrio
+            <input
+                id="select-barrio"
+                type="text"
+                class="form-control"
+                value=""
+                placeholder="Ingrese el barrio"
+                aria-label="Last name"
+              />
+            Comuna
+            <input
+                id="select-comuna"
+                type="text"
+                class="form-control"
+                value=""
+                placeholder="Ingrese su comuna. Ejemplo: 22"
+                aria-label="Last name"
+              />
+            Tipo de oferta
+            <select
+              id="select-tipo"
+              class="form-select"
+              aria-label="Default select example"
+            >
+              <option>Tipo de oferta</option>              
+              <option>Alquiler</option>              
+              <option>Venta</option>              
+            </select>
+            Estado del inmueble
+            <select
+              id="select-estado"
+              class="form-select"
+              aria-label="Default select example"
+            >
+              <option>Estado del inmueble</option> 
+              <option>Usado</option>
+              <option>Nuevo</option>              
+            </select>     
+            Tipo de inmueble
+            <select
+              id="select-inmueble"
+              class="form-select"
+              aria-label="Default select example"
+            >
+              <option>Tipo de inmueble</option>                        
+              <option>Apartamento</option>                         
+              <option>Local</option>                         
+              <option>Casa</option>                         
+              <option>Lote</option>                         
+              <option>Bodega</option>                         
+            </select>   
+            Estrato
+            <select
+              id="select-estrato"
+              class="form-select"
+              aria-label="Default select example"
+            >
+              <option>Estrato</option>                        
+              <option>1</option>                         
+              <option>2</option>                         
+              <option>3</option>                         
+              <option>4</option>                         
+              <option>5</option>                         
+              <option>6</option>                         
+            </select>   
+            Tipo de acabados    
+            <select
+              id="select-acabados"
+              class="form-select"
+              aria-label="Default select example"
+            >
+              <option>Tipo de acabados</option>                       
+              <option>Obra Gris</option>                         
+              <option>Obra Negra</option>                         
+              <option>Obra Blanca</option>                                              
+            </select>   
+            Valor de la oferta  
+            <div class="input-group">
+              <div class="input-group-text">$</div>
+              <input
+                id="select-valor-pedi"
+                type="number"
+                class="form-control"
+                value="0"
+                aria-label="Last name"
+              />
+            </div> 
+            Latitud
+            <input
+                id="select-latitud"
+                type="number"
+                class="form-control"
+                value="${e.latlng.lat.toFixed(4)}"
+                aria-label="Last name"
+                readonly
+            /> 
+            Longitud
+            <input
+                id="select-longitud"
+                type="number"
+                class="form-control"
+                value="${e.latlng.lng.toFixed(4)}"
+                aria-label="Last name"
+                readonly
+            /> 
+            <br />
+            <button
+              id="resultados"
+              type="submit"
+              class="btn btn-success"
+              data-bs-toggle="modal"
+              data-bs-target="#exampleModal"
+            >
+              Ingresar oferta
+            </button>
+          </form>`
+      )
+      .openOn(mymap);
+  };
+
+  mymap.on("click", onMapClick);
+
+  mymap.on("popupopen", (event) => {
+    console.log("POPUP");
+    document
+      .getElementById("ingresar-oferta")
+      .addEventListener("submit", (event) => {
+        event.preventDefault();
+        console.log("EDITANDO");
+
+        const datoBarrio = event.target["select-barrio"].value;
+        const datoComuna = event.target["select-comuna"].value;
+        const datoInmueble = event.target["select-inmueble"].value;
+        const datoTipo = event.target["select-tipo"].value;
+        const datoEstrato = event.target["select-estrato"].value;
+        const datoAcabados = event.target["select-acabados"].value;
+        const datoEstado = event.target["select-estado"].value;
+        const datoValorPedi = event.target["select-valor-pedi"].value;
+        const datoLng = event.target["select-longitud"].value;
+        const datoLat = event.target["select-latitud"].value;
+        const datoGeom = `Point(${datoLng} ${datoLat})`;
+
+        console.log(
+          datoBarrio,
+          datoComuna,
+          datoInmueble,
+          datoTipo,
+          datoEstrato,
+          datoAcabados,
+          datoEstado,
+          datoValorPedi,
+          datoGeom
+        );
+
+        APIIngresarOferta(
+          `http://127.0.0.1:5000/api/agrega_oferta/${datoBarrio}/${datoComuna}/${datoInmueble}/${datoTipo}/${datoEstrato}/${datoAcabados}/${datoEstado}/${datoValorPedi}/${datoGeom}`
+        ).then((data) => {
+          document.getElementById(
+            "resultado-modal"
+          ).innerHTML = `<p style="color:rgb(16, 120, 11)"><strong>Oferta creada correctamente</strong></p>`;
+        });
+
+        try {
+          desIngresarOfertas();
+        } catch (error) {
+          console.log("No se ha agregado aún la capa");
+        }
+      });
+  });
 };
 const desIngresarOfertas = () => {
+  mymap.closePopup();
   console.log("Se deshabilita ingresar ofertas");
   document
     .querySelector("button#habilitar-ingresar-oferta")
@@ -1082,11 +1269,11 @@ const desIngresarOfertas = () => {
   });
 
   /* Se remueven las capas de consulta */
-  mymap.removeLayer(ofertasSelect);
+  /* mymap.removeLayer(ofertasSelect);
   mymap.removeLayer(ofertaUbicada);
-  layerControl.removeLayer(ofertasSelect);
+  layerControl.removeLayer(ofertasSelect); */
   markers.addTo(mymap);
-  mymap.flyTo([3.42, -76.5221987], 13);
+  //mymap.flyTo([3.42, -76.5221987], 13);
 };
 /*************************** TERMINA INGRESAR OFERTAS  ***************************/
 /*************************** EDITAR OFERTAS  ***************************/
