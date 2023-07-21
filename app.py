@@ -92,19 +92,25 @@ def login():
                     coincidir_password = cursor.fetchone()[0]
                     if coincidir_password:
                         cursor.execute(
-                            """select id::text from usuarios where username =%s;""", (form.username.data,))
+                            """select id::text,tipo_usuario::text from usuarios where username =%s;""", (form.username.data,))
                         id_user = cursor.fetchone()[0]
+                        cursor.execute(
+                            """select tipo_usuario::text from usuarios where username =%s;""", (form.username.data,))
+                        type_user = cursor.fetchone()[0]
                         usuario = User()
                         usuario.id = str(id_user)
                         login_user(usuario)
-                        return redirect(url_for('ofertas'))
+                        if type_user == "Administrador":
+                            return redirect(url_for('ofertas_admin'))
+                        else: 
+                            return redirect(url_for('ofertas_user'))
 
     return render_template('login.html', form=form)
 
 
-@app.route('/inmobiliarias', methods=['GET', 'POST'])
+@app.route('/inmobiliarias_admin', methods=['GET', 'POST'])
 @login_required
-def ofertas():
+def ofertas_admin():
     with connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT comuna::int, st_x(st_centroid(the_geom)) lat,st_y(st_centroid(the_geom)) lng from comunas ORDER BY comuna ASC;")
@@ -124,7 +130,31 @@ def ofertas():
             cursor.execute("SELECT DISTINCT inmueble::text FROM ofertas_cali;")
             datos4 = cursor.fetchall()
             inmueble = [dato[0] for dato in datos4]
-    return render_template('index.html',lenCom=len(comunas),comunas=comunas, comunas_completas=comunas_completas,lenEst=len(estado),estado=estado,lenTipo=len(tipo),tipo=tipo,lenInmueble=len(inmueble), inmueble=inmueble)
+    return render_template('indexAdmin.html',lenCom=len(comunas),comunas=comunas, comunas_completas=comunas_completas,lenEst=len(estado),estado=estado,lenTipo=len(tipo),tipo=tipo,lenInmueble=len(inmueble), inmueble=inmueble)
+
+@app.route('/inmobiliarias', methods=['GET', 'POST'])
+@login_required
+def ofertas_user():
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT comuna::int, st_x(st_centroid(the_geom)) lat,st_y(st_centroid(the_geom)) lng from comunas ORDER BY comuna ASC;")
+            datos = cursor.fetchall()
+            comunas = [dato[0] for dato in datos]
+            comunas_completas = [{
+                "comuna": dato[0],
+                "lat": dato[2],
+                "lng": dato[1],
+            } for dato in datos]
+            cursor.execute("SELECT DISTINCT estado::text FROM ofertas_cali;")
+            datos2 = cursor.fetchall()
+            estado = [dato[0] for dato in datos2]
+            cursor.execute("SELECT DISTINCT tipo_ofert::text FROM ofertas_cali;")
+            datos3 = cursor.fetchall()
+            tipo = [dato[0] for dato in datos3]
+            cursor.execute("SELECT DISTINCT inmueble::text FROM ofertas_cali;")
+            datos4 = cursor.fetchall()
+            inmueble = [dato[0] for dato in datos4]
+    return render_template('indexUser.html',lenCom=len(comunas),comunas=comunas, comunas_completas=comunas_completas,lenEst=len(estado),estado=estado,lenTipo=len(tipo),tipo=tipo,lenInmueble=len(inmueble), inmueble=inmueble)
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -164,11 +194,31 @@ GROUP BY inmueble;"""
 
 ESTADISTICA_ESPACIAL = "SELECT * FROM ofertas_cali WHERE comuna ilike %s and estado ilike %s and tipo_ofert ilike %s;"
 
-OFERTAS_RANGO = """SELECT gid, barrio, comuna 
-FROM ofertas_cali
-WHERE valor_pedi BETWEEN 180000000 AND 385000000 and comuna ilike '17' and tipo_inmue = '3' and tipo_ofert ilike 'Venta'"""
+ELIMINA = "DELETE FROM ofertas_cali WHERE gid =%s;"
 
+EDITA = "UPDATE ofertas_cali SET tipo_ofert=%s, inmueble=%s, acabados=%s, estado=%s, valor_pedi=%s WHERE gid =%s;"
 
+INGRESA = """INSERT INTO ofertas_cali(
+	barrio,
+	comuna,
+	inmueble,
+	tipo_ofert,
+	estrato,
+	acabados,
+	estado,
+	valor_pedi,
+	the_geom
+) VALUES (
+	'Prueba Barrio',
+	'3',
+	'Apartamento',
+	'Alquiler',
+	'4',
+	'Obra Blanca',
+	'Nuevo',
+	1300000,
+	ST_GeometryFromText('Point(-76.4916 3.4396)')
+)"""
 
 
 # Terminan consultas
@@ -186,6 +236,25 @@ def get_estadistica(comuna,estado,tipo_oferta):
         "minimo": dato[3],
         "maximo": dato[2],
     } for dato in datos]
+
+
+## Eliminar
+@app.delete("/api/elimina_oferta/<id_oferta>")
+def delete_oferta(id_oferta):
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute(ELIMINA,(id_oferta,))
+    return {"Se eliminó la oferta con ID": id_oferta}
+
+## Editar
+@app.post("/api/edita_oferta/<tipo_ofert>/<inmueble>/<acabados>/<estado>/<valor_pedi>/<id_oferta>")
+def editar_oferta(tipo_ofert,inmueble,acabados,estado,valor_pedi,id_oferta):
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute(EDITA,(tipo_ofert,inmueble,acabados,estado,valor_pedi,id_oferta,))
+    return {"Se editó la oferta con ID": id_oferta}
+
+## Agregar
 
 
 if __name__ == '__main__':

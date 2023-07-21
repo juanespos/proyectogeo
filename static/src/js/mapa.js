@@ -10,6 +10,22 @@ const traerDatosJSON = async (url) => {
   const response = await (await fetch(url)).json();
   return response;
 };
+const APIEliminaOferta = async (url) => {
+  const response = await (
+    await fetch(url, {
+      method: "DELETE", // or 'PUT'
+    })
+  ).json();
+  return response;
+};
+const APIEditarOferta = async (url) => {
+  const response = await (
+    await fetch(url, {
+      method: "POST", // or 'PUT'
+    })
+  ).json();
+  return response;
+};
 
 var s_light_style = {
   radius: 6,
@@ -143,11 +159,11 @@ traerDatosJSON(ruta).then((data) => {
           "<tr><td> Acabados </td><td>" +
           feature.properties.acabados +
           "</td></tr>" +
-          "<tr><td> Tipo de inmueble </td><td>" +
-          feature.properties.inmueble +
-          "</td></tr>" +
           "<tr><td> Estado </td><td>" +
           feature.properties.estado +
+          "</td></tr>" +
+          "<tr><td> Valor pedido </td><td>$" +
+          thousands_separators(feature.properties.valor_pedi) +
           "</td></tr>"
       );
     },
@@ -731,11 +747,11 @@ const reiniciarConsulta4 = () => {
             "<tr><td> Acabados </td><td>" +
             feature.properties.acabados +
             "</td></tr>" +
-            "<tr><td> Tipo de inmueble </td><td>" +
-            feature.properties.inmueble +
-            "</td></tr>" +
             "<tr><td> Estado </td><td>" +
             feature.properties.estado +
+            "</td></tr>" +
+            "<tr><td> Valor pedido </td><td>$" +
+            thousands_separators(feature.properties.valor_pedi) +
             "</td></tr>"
         );
       },
@@ -822,39 +838,487 @@ outputFormat=application%2Fjson`;
   mymap.setZoom(14);
 };
 /*************************** TERMINA CUARTA_CONSULTA  ***************************/
-/*************************** QUINTA_CONSULTA  ***************************/
-/* document
-  .getElementById("busqueda-apartamentos")
-  .addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    document
-      .querySelector("button#reiniciar-consulta3")
-      .removeAttribute("disabled");
-
-    const datoComuna = event.target["select-comunas"].value;
-    const datoEstado = event.target["select-estado"].value;
-    const datoTipo = event.target["select-tipo"].value;
-    console.log(datoComuna, datoEstado, datoTipo);
-  }); */
-
-const reiniciarConsulta5 = () => {
-  /* Se reinicia el formulario de consulta */
-  document.querySelector("#busqueda-apartamentos #select-comunas").value =
-    "Seleccione la comuna";
-  document.querySelector("#busqueda-apartamentos #select-estado").value =
-    "Estado del inmueble";
-  document.querySelector("#busqueda-apartamentos #select-tipo").value =
-    "Tipo de oferta";
-
-  /* Se habilita el botón de reiniciar consulta */
+/*************************** ELIMINAR OFERTAS  ***************************/
+const eliminarOfertas = () => {
+  console.log("Se habilita eliminar ofertas");
   document
-    .querySelector("button#reiniciar-consulta3")
+    .querySelector("button#deshabilitar-eliminar-oferta")
+    .removeAttribute("disabled");
+  document
+    .querySelector("button#habilitar-eliminar-oferta")
     .setAttribute("disabled", true);
-  /* Se remueven las capas de consulta */
-  /* mymap.removeLayer(ofertasSelect);
-    layerControl.removeLayer(ofertasSelect);
-    ofertas.addTo(mymap);
-    mymap.flyTo([3.42, -76.5221987], 13); */
+
+  mymap.removeLayer(markers);
+  layerControl.removeLayer(markers);
+  //markers.addTo(mymap);
+
+  markers = L.markerClusterGroup();
+
+  const zoomToFeature = (e) => {
+    console.log(e.latlng.lat, e.latlng.lng);
+    mymap.flyTo([e.latlng.lat, e.latlng.lng], 17);
+  };
+
+  traerDatosJSON(ruta).then((data) => {
+    ofertas = new L.GeoJSON(data, {
+      onEachFeature: (feature, layer) => {
+        layer.setStyle({
+          color: "black",
+          weight: 1.9,
+        });
+        layer.bindPopup(
+          `<h4 class = "text-primary">Inmuebles</h4>
+              <div class="container">
+                <table class="table table-striped">
+                  <thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>
+                  <tbody>
+                    <tr><td> Barrio </td><td>${
+                      feature.properties.barrio
+                    }</td></tr>
+                    <tr><td> Comuna </td><td>${
+                      feature.properties.comuna
+                    }</td></tr>
+                    <tr><td> Tipo de inmueble </td><td>${
+                      feature.properties.inmueble
+                    }</td></tr>
+                    <tr><td> Tipo de oferta </td><td>${
+                      feature.properties.tipo_ofert
+                    }</td></tr>
+                    <tr><td> Valor pedido </td><td>${thousands_separators(
+                      feature.properties.valor_pedi
+                    )}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            
+            <button
+                id="reiniciar-consulta4"
+                onclick="eliminarOfertaSeleccionada(${feature.id.substr(
+                  13,
+                  feature.id.length
+                )},${feature.geometry.coordinates[0]},${
+            feature.geometry.coordinates[1]
+          })"
+                class="btn btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#exampleModal"
+              >
+                Eliminar oferta
+            </button>`
+        );
+      },
+      pointToLayer: (feature, latlng) => {
+        capa_ofertas = L.circleMarker(latlng, s_light_style);
+        groupedOverlays["Ofertas"] = capa_ofertas;
+        return capa_ofertas;
+      },
+    });
+    markers.addLayer(ofertas);
+    layerControl.addOverlay(markers, "Ofertas");
+    markers.addTo(mymap);
+  });
 };
-/*************************** TERMINA QUINTA_CONSULTA  ***************************/
+
+const eliminarOfertaSeleccionada = (valor, x, y) => {
+  console.log("ELIMINE OFERTA ", valor);
+
+  APIEliminaOferta(`http://127.0.0.1:5000/api/elimina_oferta/${valor}`).then(
+    (data) => {
+      document.getElementById(
+        "resultado-modal"
+      ).innerHTML = `<p style="color:rgb(170, 7, 7)"><strong>Se eliminó la oferta seleccionada</strong></p>`;
+    }
+  );
+
+  try {
+    desEliminarOfertas();
+  } catch (error) {
+    console.log("No se ha agregado aún la capa");
+  }
+};
+
+const desEliminarOfertas = () => {
+  console.log("Se deshabilita eliminar ofertas");
+  document
+    .querySelector("button#habilitar-eliminar-oferta")
+    .removeAttribute("disabled");
+  document
+    .querySelector("button#deshabilitar-eliminar-oferta")
+    .setAttribute("disabled", true);
+
+  mymap.removeLayer(markers);
+  layerControl.removeLayer(markers);
+  //markers.addTo(mymap);
+
+  markers = L.markerClusterGroup();
+
+  traerDatosJSON(ruta).then((data) => {
+    ofertas = new L.GeoJSON(data, {
+      onEachFeature: (feature, layer) => {
+        layer.setStyle({
+          color: "black",
+          weight: 1.9,
+        });
+        layer.bindPopup(
+          '<h4 class = "text-primary">Inmuebles</h4>' +
+            '<div class="container"><table class="table table-striped">' +
+            "<thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>" +
+            "<tbody><tr><td> Barrio </td><td>" +
+            feature.properties.barrio +
+            "</td></tr>" +
+            "<tr><td>Comuna </td><td>" +
+            feature.properties.comuna +
+            "</td></tr>" +
+            "<tr><td> Tipo de inmueble </td><td>" +
+            feature.properties.inmueble +
+            "</td></tr>" +
+            "<tr><td> Tipo de oferta </td><td>" +
+            feature.properties.tipo_ofert +
+            "</td></tr>" +
+            "<tr><td> Estrato </td><td>" +
+            feature.properties.estrato +
+            "</td></tr>" +
+            "<tr><td> Acabados </td><td>" +
+            feature.properties.acabados +
+            "</td></tr>" +
+            "<tr><td> Estado </td><td>" +
+            feature.properties.estado +
+            "</td></tr>" +
+            "<tr><td> Valor pedido </td><td>$" +
+            thousands_separators(feature.properties.valor_pedi) +
+            "</td></tr>"
+        );
+      },
+      pointToLayer: (feature, latlng) => {
+        capa_ofertas = L.circleMarker(latlng, s_light_style);
+        groupedOverlays["Ofertas"] = capa_ofertas;
+        return capa_ofertas;
+      },
+    });
+    markers.addLayer(ofertas);
+    layerControl.addOverlay(markers, "Ofertas");
+    markers.addTo(mymap);
+  });
+
+  /* Se remueven las capas de consulta */
+  mymap.removeLayer(ofertasSelect);
+  mymap.removeLayer(ofertaUbicada);
+  layerControl.removeLayer(ofertasSelect);
+  markers.addTo(mymap);
+  //mymap.flyTo([3.42, -76.5221987], 13);
+};
+/*************************** TERMINA ELIMINAR OFERTAS  ***************************/
+/*************************** INGRESAR OFERTAS  ***************************/
+const ingresarOfertas = () => {
+  console.log("Se habilita ingresar ofertas");
+  document
+    .querySelector("button#deshabilitar-ingresar-oferta")
+    .removeAttribute("disabled");
+  document
+    .querySelector("button#habilitar-ingresar-oferta")
+    .setAttribute("disabled", true);
+};
+const desIngresarOfertas = () => {
+  console.log("Se deshabilita ingresar ofertas");
+  document
+    .querySelector("button#habilitar-ingresar-oferta")
+    .removeAttribute("disabled");
+  document
+    .querySelector("button#deshabilitar-ingresar-oferta")
+    .setAttribute("disabled", true);
+
+  mymap.removeLayer(markers);
+  layerControl.removeLayer(markers);
+  //markers.addTo(mymap);
+
+  markers = L.markerClusterGroup();
+
+  traerDatosJSON(ruta).then((data) => {
+    ofertas = new L.GeoJSON(data, {
+      onEachFeature: (feature, layer) => {
+        layer.setStyle({
+          color: "black",
+          weight: 1.9,
+        });
+        layer.bindPopup(
+          '<h4 class = "text-primary">Inmuebles</h4>' +
+            '<div class="container"><table class="table table-striped">' +
+            "<thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>" +
+            "<tbody><tr><td> Barrio </td><td>" +
+            feature.properties.barrio +
+            "</td></tr>" +
+            "<tr><td>Comuna </td><td>" +
+            feature.properties.comuna +
+            "</td></tr>" +
+            "<tr><td> Tipo de inmueble </td><td>" +
+            feature.properties.inmueble +
+            "</td></tr>" +
+            "<tr><td> Tipo de oferta </td><td>" +
+            feature.properties.tipo_ofert +
+            "</td></tr>" +
+            "<tr><td> Estrato </td><td>" +
+            feature.properties.estrato +
+            "</td></tr>" +
+            "<tr><td> Acabados </td><td>" +
+            feature.properties.acabados +
+            "</td></tr>" +
+            "<tr><td> Estado </td><td>" +
+            feature.properties.estado +
+            "</td></tr>" +
+            "<tr><td> Valor pedido </td><td>$" +
+            thousands_separators(feature.properties.valor_pedi) +
+            "</td></tr>"
+        );
+      },
+      pointToLayer: (feature, latlng) => {
+        capa_ofertas = L.circleMarker(latlng, s_light_style);
+        groupedOverlays["Ofertas"] = capa_ofertas;
+        return capa_ofertas;
+      },
+    });
+    markers.addLayer(ofertas);
+    layerControl.addOverlay(markers, "Ofertas");
+    markers.addTo(mymap);
+  });
+
+  /* Se remueven las capas de consulta */
+  mymap.removeLayer(ofertasSelect);
+  mymap.removeLayer(ofertaUbicada);
+  layerControl.removeLayer(ofertasSelect);
+  markers.addTo(mymap);
+  mymap.flyTo([3.42, -76.5221987], 13);
+};
+/*************************** TERMINA INGRESAR OFERTAS  ***************************/
+/*************************** EDITAR OFERTAS  ***************************/
+const editarOfertas = () => {
+  console.log("Se habilita editar ofertas");
+  document
+    .querySelector("button#deshabilitar-editar-oferta")
+    .removeAttribute("disabled");
+  document
+    .querySelector("button#habilitar-editar-oferta")
+    .setAttribute("disabled", true);
+
+  mymap.removeLayer(markers);
+  layerControl.removeLayer(markers);
+  //markers.addTo(mymap);
+
+  markers = L.markerClusterGroup();
+
+  const zoomToFeature = (e) => {
+    console.log(e.latlng.lat, e.latlng.lng);
+    mymap.flyTo([e.latlng.lat, e.latlng.lng], 17);
+  };
+
+  traerDatosJSON(ruta).then((data) => {
+    ofertas = new L.GeoJSON(data, {
+      onEachFeature: (feature, layer) => {
+        layer.setStyle({
+          color: "black",
+          weight: 1.9,
+        });
+        layer.bindPopup(
+          `<h4 class = "text-primary">Editar oferta</h4>      
+            <form action="" method="post" id="editar-ofert">
+            id
+            <input
+                id="select-id"
+                type="number"
+                class="form-control"
+                value="${feature.id.substr(13, feature.id.length)}"
+                aria-label="Last name"
+                readonly
+            />
+            Tipo de oferta
+            <select
+              id="select-tipo"
+              class="form-select"
+              aria-label="Default select example"
+            >
+              <option>${feature.properties.tipo_ofert}</option>              
+              <option>Alquiler</option>              
+              <option>Venta</option>              
+            </select>
+            Estado del inmueble
+            <select
+              id="select-estado"
+              class="form-select"
+              aria-label="Default select example"
+            >
+              <option>${feature.properties.estado}</option> 
+              <option>Usado</option>
+              <option>Nuevo</option>              
+            </select>     
+            Tipo de inmueble
+            <select
+              id="select-inmueble"
+              class="form-select"
+              aria-label="Default select example"
+            >
+              <option>${
+                feature.properties.inmueble
+              }</option>                        
+              <option>Apartamento</option>                         
+              <option>Local</option>                         
+              <option>Casa</option>                         
+              <option>Lote</option>                         
+              <option>Bodega</option>                         
+            </select>   
+            Tipo de acabados    
+            <select
+              id="select-acabados"
+              class="form-select"
+              aria-label="Default select example"
+            >
+              <option>${
+                feature.properties.acabados
+              }</option>                       
+              <option>Obra Gris</option>                         
+              <option>Obra Negra</option>                         
+              <option>Obra Blanca</option>                                              
+            </select>   
+            Valor de la oferta  
+            <div class="input-group">
+              <div class="input-group-text">$</div>
+              <input
+                id="select-valor-pedi"
+                type="number"
+                class="form-control"
+                value="${feature.properties.valor_pedi.toFixed(2)}"
+                aria-label="Last name"
+              />
+            </div>  
+            <br />
+            <button
+              id="resultados"
+              type="submit"
+              class="btn btn-warning"
+              data-bs-toggle="modal"
+              data-bs-target="#exampleModal"
+            >
+              Editar oferta
+            </button>
+          </form>`
+        );
+      },
+      pointToLayer: (feature, latlng) => {
+        capa_ofertas = L.circleMarker(latlng, s_light_style);
+        groupedOverlays["Ofertas"] = capa_ofertas;
+        return capa_ofertas;
+      },
+    });
+    markers.addLayer(ofertas);
+    layerControl.addOverlay(markers, "Ofertas");
+    markers.addTo(mymap);
+
+    mymap.on("popupopen", (event) => {
+      console.log("POPUP");
+      document
+        .getElementById("editar-ofert")
+        .addEventListener("submit", (event) => {
+          event.preventDefault();
+          console.log("EDITANDO");
+
+          const datoID = event.target["select-id"].value;
+          const datoTipo = event.target["select-tipo"].value;
+          const datoInmueble = event.target["select-inmueble"].value;
+          const datoAcabados = event.target["select-acabados"].value;
+          const datoEstado = event.target["select-estado"].value;
+          const datoValorPedi = event.target["select-valor-pedi"].value;
+          console.log(
+            datoTipo,
+            datoInmueble,
+            datoAcabados,
+            datoEstado,
+            datoValorPedi,
+            datoID
+          );
+          APIEditarOferta(
+            `http://127.0.0.1:5000/api/edita_oferta/${datoTipo}/${datoInmueble}/${datoAcabados}/${datoEstado}/${datoValorPedi}/${datoID}`
+          ).then((data) => {
+            document.getElementById(
+              "resultado-modal"
+            ).innerHTML = `<p style="color:rgb(16, 120, 11)"><strong>Oferta actualizada correctamente</strong></p>`;
+          });
+
+          try {
+            desEditarOfertas();
+          } catch (error) {
+            console.log("No se ha agregado aún la capa");
+          }
+        });
+    });
+  });
+};
+
+const desEditarOfertas = () => {
+  console.log("Se deshabilita editar ofertas");
+  document
+    .querySelector("button#habilitar-editar-oferta")
+    .removeAttribute("disabled");
+  document
+    .querySelector("button#deshabilitar-editar-oferta")
+    .setAttribute("disabled", true);
+
+  mymap.removeLayer(markers);
+  layerControl.removeLayer(markers);
+  //markers.addTo(mymap);
+
+  markers = L.markerClusterGroup();
+
+  traerDatosJSON(ruta).then((data) => {
+    ofertas = new L.GeoJSON(data, {
+      onEachFeature: (feature, layer) => {
+        layer.setStyle({
+          color: "black",
+          weight: 1.9,
+        });
+        layer.bindPopup(
+          '<h4 class = "text-primary">Inmuebles</h4>' +
+            '<div class="container"><table class="table table-striped">' +
+            "<thead><tr><th>Propiedad</th><th>Valor</th></tr></thead>" +
+            "<tbody><tr><td> Barrio </td><td>" +
+            feature.properties.barrio +
+            "</td></tr>" +
+            "<tr><td>Comuna </td><td>" +
+            feature.properties.comuna +
+            "</td></tr>" +
+            "<tr><td> Tipo de inmueble </td><td>" +
+            feature.properties.inmueble +
+            "</td></tr>" +
+            "<tr><td> Tipo de oferta </td><td>" +
+            feature.properties.tipo_ofert +
+            "</td></tr>" +
+            "<tr><td> Estrato </td><td>" +
+            feature.properties.estrato +
+            "</td></tr>" +
+            "<tr><td> Acabados </td><td>" +
+            feature.properties.acabados +
+            "</td></tr>" +
+            "<tr><td> Estado </td><td>" +
+            feature.properties.estado +
+            "</td></tr>" +
+            "<tr><td> Valor pedido </td><td>$" +
+            thousands_separators(feature.properties.valor_pedi) +
+            "</td></tr>"
+        );
+      },
+      pointToLayer: (feature, latlng) => {
+        capa_ofertas = L.circleMarker(latlng, s_light_style);
+        groupedOverlays["Ofertas"] = capa_ofertas;
+        return capa_ofertas;
+      },
+    });
+    markers.addLayer(ofertas);
+    layerControl.addOverlay(markers, "Ofertas");
+    markers.addTo(mymap);
+  });
+
+  /* Se remueven las capas de consulta */
+  mymap.removeLayer(ofertasSelect);
+  mymap.removeLayer(ofertaUbicada);
+  layerControl.removeLayer(ofertasSelect);
+  markers.addTo(mymap);
+  //mymap.flyTo([3.42, -76.5221987], 13);
+};
+/*************************** TERMINA EDITAR OFERTAS  ***************************/

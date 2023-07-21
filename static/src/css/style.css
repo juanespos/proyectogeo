@@ -4,6 +4,7 @@
 
 .leaflet-popup-content-wrapper {
   border-radius: 0%;
+  width: 300px;
 }
 
 .leaflet-popup-close-button {
